@@ -3,17 +3,17 @@
 
 // Neopixel
 #define PIN D1           // PIN (14 / D5) where neopixel / WS2811 strip is attached
-#define NUMLEDS 24       // Number of leds in the strip
+#define NUMLEDS 35       // Number of leds in the strip
 #define BUILTIN_LED 2    // ESP-12F has the built in LED on GPIO2, see https://github.com/esp8266/Arduino/issues/2192
 #define BUTTON 4         // Input pin (4 / D2) for switching the LED strip on / off, connect this PIN to ground to trigger button.
 
-const char HOSTNAME[] = "McLighting01";   // Friedly hostname
+const char HOSTNAME[] = "dna-infinity-tma";   // Friedly hostname
 
-#define HTTP_OTA             // If defined, enable ESP8266HTTPUpdateServer OTA code.
+//#define HTTP_OTA             // If defined, enable ESP8266HTTPUpdateServer OTA code.
 //#define ENABLE_OTA         // If defined, enable Arduino OTA code.
-#define ENABLE_AMQTT         // If defined, enable Async MQTT code, see: https://github.com/marvinroger/async-mqtt-client
+//#define ENABLE_AMQTT         // If defined, enable Async MQTT code, see: https://github.com/marvinroger/async-mqtt-client
 //#define ENABLE_MQTT        // If defined, enable MQTT client code, see: https://github.com/toblum/McLighting/wiki/MQTT-API
-#define ENABLE_HOMEASSISTANT // If defined, enable Homeassistant integration, ENABLE_MQTT must be active
+//#define ENABLE_HOMEASSISTANT // If defined, enable Homeassistant integration, ENABLE_MQTT must be active
 #define ENABLE_BUTTON        // If defined, enable button handling code, see: https://github.com/toblum/McLighting/wiki/Button-control
 //#define MQTT_HOME_ASSISTANT_SUPPORT // If defined, use AMQTT and select Tools -> IwIP Variant -> Higher Bandwidth
 #define ENABLE_LEGACY_ANIMATIONS

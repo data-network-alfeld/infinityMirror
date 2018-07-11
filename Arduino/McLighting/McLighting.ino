@@ -322,7 +322,7 @@ void setup() {
   
   // Uncomment if you want to restart ESP8266 if it cannot connect to WiFi.
   // Value in brackets is in seconds that WiFiManger waits until restart
-  //wifiManager.setConfigPortalTimeout(180);
+  wifiManager.setConfigPortalTimeout(5);
 
   // Uncomment if you want to set static IP 
   // Order is: IP, Gateway and Subnet 
@@ -332,12 +332,31 @@ void setup() {
   //if it does not connect it starts an access point with the specified name
   //here  "AutoConnectAP"
   //and goes into a blocking loop awaiting configuration
+  
+  if (digitalRead(BUTTON) == 0)
+  {
+
+     WiFiManager wifiManager;
+    wifiManager.resetSettings();
+ wifiManager.setConfigPortalTimeout(0);
+
   if (!wifiManager.autoConnect(HOSTNAME)) {
-    DBG_OUTPUT_PORT.println("failed to connect and hit timeout");
-    //reset and try again, or maybe put it to deep sleep
-    ESP.reset();  //Will be removed when upgrading to standalone offline McLightingUI version
-    delay(1000);  //Will be removed when upgrading to standalone offline McLightingUI version
+      DBG_OUTPUT_PORT.println("failed to connect and hit timeout");
+      //reset and try again, or maybe put it to deep sleep
+      ESP.reset();  //Will be removed when upgrading to standalone offline McLightingUI version
+      delay(1000);  //Will be removed when upgrading to standalone offline McLightingUI version
+    } 
+    ESP.restart();
   }
+
+  if (!wifiManager.autoConnect(HOSTNAME)) {
+      DBG_OUTPUT_PORT.println("failed to connect and hit timeout");
+      WiFi.softAP("testwlan", "Fluttershy");
+
+      //reset and try again, or maybe put it to deep sleep
+//ESP.reset();  //Will be removed when upgrading to standalone offline McLightingUI version
+ //     delay(1000);  //Will be removed when upgrading to standalone offline McLightingUI version
+    } 
 
   #if defined(ENABLE_MQTT) or defined(ENABLE_AMQTT)
     //read updated parameters
@@ -363,11 +382,6 @@ void setup() {
     #endif
   #endif
   
-  #ifdef ENABLE_AMQTT
-    wifiConnectHandler = WiFi.onStationModeGotIP(onWifiConnect);
-    wifiDisconnectHandler = WiFi.onStationModeDisconnected(onWifiDisconnect);
-  #endif
-
   //if you get here you have connected to the WiFi
   DBG_OUTPUT_PORT.println("connected...yeey :)");
   ticker.detach();
@@ -375,79 +389,6 @@ void setup() {
   digitalWrite(BUILTIN_LED, LOW);
 
 
-  // ***************************************************************************
-  // Configure OTA
-  // ***************************************************************************
-  #ifdef ENABLE_OTA
-    DBG_OUTPUT_PORT.println("Arduino OTA activated.");
-
-    // Port defaults to 8266
-    ArduinoOTA.setPort(8266);
-
-    // Hostname defaults to esp8266-[ChipID]
-    ArduinoOTA.setHostname(HOSTNAME);
-
-    // No authentication by default
-    // ArduinoOTA.setPassword("admin");
-
-    // Password can be set with it's md5 value as well
-    // MD5(admin) = 21232f297a57a5a743894a0e4a801fc3
-    // ArduinoOTA.setPasswordHash("21232f297a57a5a743894a0e4a801fc3");
-
-    ArduinoOTA.onStart([]() {
-      DBG_OUTPUT_PORT.println("Arduino OTA: Start updating");
-    });
-    ArduinoOTA.onEnd([]() {
-      DBG_OUTPUT_PORT.println("Arduino OTA: End");
-    });
-    ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-      DBG_OUTPUT_PORT.printf("Arduino OTA Progress: %u%%\r", (progress / (total / 100)));
-    });
-    ArduinoOTA.onError([](ota_error_t error) {
-      DBG_OUTPUT_PORT.printf("Arduino OTA Error[%u]: ", error);
-      if (error == OTA_AUTH_ERROR) DBG_OUTPUT_PORT.println("Arduino OTA: Auth Failed");
-      else if (error == OTA_BEGIN_ERROR) DBG_OUTPUT_PORT.println("Arduino OTA: Begin Failed");
-      else if (error == OTA_CONNECT_ERROR) DBG_OUTPUT_PORT.println("Arduino OTA: Connect Failed");
-      else if (error == OTA_RECEIVE_ERROR) DBG_OUTPUT_PORT.println("Arduino OTA: Receive Failed");
-      else if (error == OTA_END_ERROR) DBG_OUTPUT_PORT.println("Arduino OTA: End Failed");
-    });
-
-    ArduinoOTA.begin();
-    DBG_OUTPUT_PORT.println("");
-  #endif
-
-
-  // ***************************************************************************
-  // Configure MQTT
-  // ***************************************************************************
-  #ifdef ENABLE_MQTT
-    if (mqtt_host != "" && atoi(mqtt_port) > 0) {
-      snprintf(mqtt_intopic, sizeof mqtt_intopic, "%s/in", HOSTNAME);
-      snprintf(mqtt_outtopic, sizeof mqtt_outtopic, "%s/out", HOSTNAME);
-
-      DBG_OUTPUT_PORT.printf("MQTT active: %s:%d\n", mqtt_host, String(mqtt_port).toInt());
-
-      mqtt_client.setServer(mqtt_host, atoi(mqtt_port));
-      mqtt_client.setCallback(mqtt_callback);
-    }
-  #endif
-
-  #ifdef ENABLE_AMQTT
-    if (mqtt_host != "" && atoi(mqtt_port) > 0) {
-      amqttClient.onConnect(onMqttConnect);
-      amqttClient.onDisconnect(onMqttDisconnect);
-      amqttClient.onMessage(onMqttMessage);
-      amqttClient.setServer(mqtt_host, atoi(mqtt_port));
-      if (mqtt_user != "" or mqtt_pass != "") amqttClient.setCredentials(mqtt_user, mqtt_pass);
-      amqttClient.setClientId(mqtt_clientid);
-
-      connectToMqtt();
-    }
-  #endif
-
-  // #ifdef ENABLE_HOMEASSISTANT
-  //   ha_send_data.attach(5, tickerSendState); // Send HA data back only every 5 sec
-  // #endif
 
   // ***************************************************************************
   // Setup: MDNS responder
